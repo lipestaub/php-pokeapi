@@ -1,0 +1,11 @@
+body {
+    padding: 0;
+    margin: auto;
+    width: 400px;
+
+    text-align: center;
+}
+
+body main ol li {
+    margin: 4px;
+}
