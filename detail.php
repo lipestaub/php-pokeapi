@@ -1,19 +1,37 @@
 <?php
     $name = $_GET['name'];
 
-    $url = 'https://pokeapi.co/api/v2/pokemon/' . $name;
+    $arquivoPokemon = file(__DIR__ . "/public/files/$name.txt");
 
-    $curl = curl_init();
-    curl_setopt_array($curl, [
-        CURLOPT_URL => $url,
-        CURLOPT_CUSTOMREQUEST => 'GET',
-        CURLOPT_RETURNTRANSFER => true,
-    ]);
-    $result = curl_exec($curl);
-    curl_close($curl);
+    if (!$arquivoPokemon) {
+        $url = 'https://pokeapi.co/api/v2/pokemon/' . $name;
 
-    $pokemon = (array) json_decode($result);
-    $stats = $pokemon['stats'];
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_RETURNTRANSFER => true,
+        ]);
+        $result = curl_exec($curl);
+        curl_close($curl);
+
+        $pokemon = (array) json_decode($result);
+        $stats = $pokemon['stats'];
+
+        $arquivo = __DIR__ . "/public/files/$name.txt";
+        $arquivoAberto = fopen($arquivo, 'a');
+
+        foreach ($stats as $stat) {
+            $stat = (array) $stat;
+            $statName = (array) $stat['stat'];
+
+            fwrite($arquivoAberto, $statName['name'] . " = " . $stat['base_stat'] . "\n");
+        }
+
+        fclose($arquivoAberto);
+    }
+
+    $stats = file(__DIR__ . "/public/files/$name.txt");
 ?>
 
 <!DOCTYPE html>
@@ -33,10 +51,9 @@
         <ul>
             <?php
                 foreach ($stats as $stat) {
-                    $stat = (array) $stat;
-                    $statName = (array) $stat['stat'];
+                    $statValues = explode(" = ", $stat);
             ?>
-                    <li><?php echo $statName['name'] . " = " . $stat['base_stat'];?></li>
+                    <li><?php echo $statValues[0] . " = " . $statValues[1];?></li>
             <?php
                 }
             ?>

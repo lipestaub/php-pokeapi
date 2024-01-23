@@ -17,19 +17,37 @@
         $paginaAnterior = $paginaAtual >= 2 ? $paginaAtual - 1 : 1;
     }
 
-    $url = 'https://pokeapi.co/api/v2/pokemon?limit=' . $limite . '&offset=' . $inicio;
+    $arquivoPokemons = file(__DIR__ . '/public/files/pokemons.txt');
 
-    $curl = curl_init();
-    curl_setopt_array($curl, [
-        CURLOPT_URL => $url,
-        CURLOPT_CUSTOMREQUEST => 'GET',
-        CURLOPT_RETURNTRANSFER => true,
-    ]);
-    $result = curl_exec($curl);
-    curl_close($curl);
+    if (!$arquivoPokemons || count($arquivoPokemons) === 0) {
+        $url = 'https://pokeapi.co/api/v2/pokemon?limit=150';
 
-    $pokemons = (array) json_decode($result);
-    $pokemons = $pokemons['results'];
+        $curl = curl_init();
+        curl_setopt_array($curl, [
+            CURLOPT_URL => $url,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_RETURNTRANSFER => true,
+        ]);
+        $result = curl_exec($curl);
+        curl_close($curl);
+
+        $pokemons = (array) json_decode($result);
+        $pokemons = $pokemons['results'];
+
+        $arquivo = __DIR__ . '/public/files/pokemons.txt';
+        $arquivoAberto = fopen($arquivo, 'a');
+
+        foreach ($pokemons as $pokemon) {
+            $pokemon = (array) $pokemon;
+            fwrite($arquivoAberto, $pokemon['name'] . "\n");
+        }
+
+        fclose($arquivoAberto);
+
+        $arquivoPokemons = file(__DIR__ . '/public/files/pokemons.txt');
+    }
+
+    $pokemons = array_slice($arquivoPokemons, $inicio, $limite);
 ?>
 
 <!DOCTYPE html>
@@ -48,10 +66,10 @@
     <main>
         <ol start="<?php echo ($inicio + 1); ?>">
             <?php
-                foreach ($pokemons as $pokemon) {
+                foreach ($pokemons as $key=>$name) {
                     $pokemon = (array) $pokemon;
             ?>
-                    <li><a href="./detail.php?name=<?php echo $pokemon['name']; ?>" target="_blank"><?php echo ucfirst($pokemon['name']); ?></a></li>
+                    <li><a href="./detail.php?name=<?php echo $name; ?>" target="_blank"><?php echo ucfirst($name); ?></a></li>
             <?php
                 }
             ?>
