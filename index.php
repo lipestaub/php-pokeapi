@@ -1,57 +1,46 @@
 <?php
-    $limite = 15;
+    require_once __DIR__ . '/modules/constants.php';
+    require_once __DIR__ . '/modules/variables.php';
+    require_once __DIR__ . '/modules/getPokemons.php';
 
-    $inicio = 0;
-    $fim = $limite;
+    if (!isset($_GET['page'])) {
+        $start = 0;
+        $end = LIMIT;
 
-    $paginaAtual = 1;
-    $paginaSeguinte = 2;
-    $paginaAnterior = 1;
+        $currentPage = 1;
+        $nextPage = 2;
+        $lastPage = 1;
+    }
+    else {
+        $page = (int) $_GET['page'];
 
-    if (isset($_GET['pagina'])) {
-        $inicio = ($_GET['pagina'] * $limite) - $limite;
-        $fim = $_GET['pagina'] * $limite;
+        $start = ($page * LIMIT) - LIMIT;
+        $end = $page * LIMIT;
 
-        $paginaAtual = $_GET['pagina'];
-        $paginaSeguinte = $paginaAtual <= 9 ? $paginaAtual + 1 : 10;
-        $paginaAnterior = $paginaAtual >= 2 ? $paginaAtual - 1 : 1;
+        $currentPage = $page;
+        $nextPage = $currentPage <= 9 ? $currentPage + 1 : 10;
+        $lastPage = $currentPage >= 2 ? $currentPage - 1 : 1;
     }
 
-    $arquivoPokemons = file(__DIR__ . '/public/files/pokemons.txt');
+    $filePath = __DIR__ . '/public/files/pokemons.txt';
 
-    if (!$arquivoPokemons || count($arquivoPokemons) === 0) {
-        $url = 'https://pokeapi.co/api/v2/pokemon?limit=150';
+    if (!file_exists($filePath) || count(file($filePath)) === 0) {
+        $pokemons = getPokemons(150);
 
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_RETURNTRANSFER => true,
-        ]);
-        $result = curl_exec($curl);
-        curl_close($curl);
-
-        $pokemons = (array) json_decode($result);
-        $pokemons = $pokemons['results'];
-
-        $arquivo = __DIR__ . '/public/files/pokemons.txt';
-        $arquivoAberto = fopen($arquivo, 'a');
+        $openedFile = fopen($filePath, 'a');
 
         foreach ($pokemons as $pokemon) {
-            $pokemon = (array) $pokemon;
-            fwrite($arquivoAberto, $pokemon['name'] . "\n");
+            fwrite($openedFile, $pokemon['name'] . "\n");
         }
 
-        fclose($arquivoAberto);
-
-        $arquivoPokemons = file(__DIR__ . '/public/files/pokemons.txt');
+        fclose($openedFile);
     }
 
-    $pokemons = array_slice($arquivoPokemons, $inicio, $limite);
+    $pokemons = array_slice(file($filePath), $start, LIMIT);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -61,26 +50,25 @@
 </head>
 <body>
     <header>
-        <h1>Pokédex (<?php echo ($inicio + 1) . " - " . $fim ?>)</h1>
+        <h1>Pokédex (<?php echo ($start + 1) . " - " . $end ?>)</h1>
     </header>
     <main>
-        <ol start="<?php echo ($inicio + 1); ?>">
+        <ol start="<?php echo ($start + 1); ?>">
             <?php
-                foreach ($pokemons as $key=>$name) {
-                    $pokemon = (array) $pokemon;
+                foreach ($pokemons as $key=>$pokemonName) {
             ?>
-                    <li><a href="./detail.php?name=<?php echo $name; ?>" target="_blank"><?php echo ucfirst($name); ?></a></li>
+                    <li><a href="./detail.php?pokemonName=<?php echo $pokemonName; ?>" target="_blank"><?php echo ucfirst($pokemonName); ?></a></li>
             <?php
                 }
             ?>
         </ol>
     </main>
     <footer>
-        <a href="./index.php?pagina=1">Início</a>
-        <a href="./index.php?pagina=<?php echo $paginaAnterior; ?>"><<</a>
-        <span><?php echo $paginaAtual ?></span>
-        <a href="./index.php?pagina=<?php echo $paginaSeguinte; ?>">>></a>
-        <a href="./index.php?pagina=10">Fim</a>
+        <a href="./index.php?page=1">Início</a>
+        <a href="./index.php?page=<?php echo $lastPage; ?>"><<</a>
+        <span><?php echo $currentPage ?></span>
+        <a href="./index.php?page=<?php echo $nextPage; ?>">>></a>
+        <a href="./index.php?page=10">Fim</a>
     </footer>
 </body>
 </html>

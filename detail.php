@@ -1,51 +1,40 @@
 <?php
-    $name = $_GET['name'];
+    require_once __DIR__ . '/modules/variables.php';
+    require_once __DIR__ . '/modules/getPokemon.php';
 
-    $arquivoPokemon = file(__DIR__ . "/public/files/$name.txt");
+    $pokemonName = $_GET['pokemonName'];
 
-    if (!$arquivoPokemon) {
-        $url = 'https://pokeapi.co/api/v2/pokemon/' . $name;
+    $filePath = __DIR__ . "/public/files/$pokemonName.txt";
 
-        $curl = curl_init();
-        curl_setopt_array($curl, [
-            CURLOPT_URL => $url,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_RETURNTRANSFER => true,
-        ]);
-        $result = curl_exec($curl);
-        curl_close($curl);
+    if (!file_exists($filePath)) {
+        $pokemon = getPokemon($pokemonName);
 
-        $pokemon = (array) json_decode($result);
         $stats = $pokemon['stats'];
 
-        $arquivo = __DIR__ . "/public/files/$name.txt";
-        $arquivoAberto = fopen($arquivo, 'a');
+        $openedFile = fopen($filePath, 'a');
 
         foreach ($stats as $stat) {
-            $stat = (array) $stat;
-            $statName = (array) $stat['stat'];
-
-            fwrite($arquivoAberto, $statName['name'] . " = " . $stat['base_stat'] . "\n");
+            fwrite($openedFile, $stat['stat']['name'] . " = " . $stat['base_stat'] . "\n");
         }
 
-        fclose($arquivoAberto);
+        fclose($openedFile);
     }
 
-    $stats = file(__DIR__ . "/public/files/$name.txt");
+    $stats = file($filePath);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo ucfirst($name); ?></title>
+    <title><?php echo ucfirst($pokemonName); ?></title>
 
     <link rel="stylesheet" href="./public/css/style.css">
 </head>
 <body>
     <header>
-        <h1><?php echo ucfirst($name); ?> Stats</h1>
+        <h1><?php echo ucfirst($pokemonName); ?> Stats</h1>
     </header>
     <main>
         <ul>
@@ -53,7 +42,7 @@
                 foreach ($stats as $stat) {
                     $statValues = explode(" = ", $stat);
             ?>
-                    <li><?php echo $statValues[0] . " = " . $statValues[1];?></li>
+                    <li><?php echo $statValues[0] . " = " . $statValues[1]; ?></li>
             <?php
                 }
             ?>
