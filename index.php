@@ -64,11 +64,13 @@
         </ol>
     </main>
     <footer>
-        <a href="./index.php?page=1">Início</a>
-        <a href="./index.php?page=<?php echo $lastPage; ?>"><<</a>
-        <span><?php echo $currentPage ?></span>
-        <a href="./index.php?page=<?php echo $nextPage; ?>">>></a>
-        <a href="./index.php?page=10">Fim</a>
+        <div class="navigation">
+            <a href="./index.php?page=1">Início</a>
+            <a href="./index.php?page=<?php echo $lastPage; ?>"><<</a>
+            <span><?php echo $currentPage ?></span>
+            <a href="./index.php?page=<?php echo $nextPage; ?>">>></a>
+            <a href="./index.php?page=10">Fim</a>
+        </div>
     </footer>
 </body>
 </html>
